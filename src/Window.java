@@ -15,9 +15,9 @@ class Window extends JFrame implements ActionListener
 {
 	//DECLARING REQUIRED VARIABLES
 	JFrame window = new JFrame("PASSFACE SYSTEM");
-	JFrame login = new JFrame("PASSFACE SYSTEM : LOGIN");
-	JFrame login2 = new JFrame("PASSFACE SYSTEM : LOGIN - Step2");
-	JFrame login3 = new JFrame("PASSFACE SYSTEM : LOGIN - Step3");
+	JFrame login;
+	JFrame login2;
+	JFrame login3;
 	JFrame register = new JFrame("PASSFACE SYSTEM : Registeration");
 	JPanel ImgPanel = new JPanel();
 	
@@ -138,8 +138,16 @@ class Window extends JFrame implements ActionListener
 			register.setVisible(true);
 		
 	}
-	void login(int selected_images[])
+	void newAttempt(int selected_imgs[])
 	{
+		correctEntry=0;
+		
+		login(selected_imgs);		
+		
+	}
+	public void login(int selected_images[])
+	{
+			login = new JFrame("PASSFACE SYSTEM : LOGIN");
 			login.setLocation(0,0);//SETTING WINDOW LOCATION
 			login.setLayout(new BorderLayout()); // SETTING WINDOW LAYOUT
 			login.setExtendedState(JFrame.MAXIMIZED_BOTH); //FOR MAXIMIZED WINDOW
@@ -175,6 +183,7 @@ class Window extends JFrame implements ActionListener
 				    button[i].addActionListener(this);
 					
 				}
+				randomValues= null;
 				loginPage.setLayout(new GridLayout(3,0));
 				login.add(loginPage, BorderLayout.CENTER);
 				
@@ -201,7 +210,8 @@ class Window extends JFrame implements ActionListener
 		
 		JLabel heading2 = new JLabel("LOGIN : Step 2");	
 		heading2.setFont (heading2.getFont ().deriveFont (34.0f));
-	
+		
+		login2 = new JFrame("PASSFACE SYSTEM : LOGIN - Step2");
 		login2.setLocation(0,0);
 		login2.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		login2.setLayout(new BorderLayout());
@@ -228,6 +238,7 @@ class Window extends JFrame implements ActionListener
 			    button[i].addActionListener(this);
 				
 			}
+			random_values=null;
 			Step2.setLayout(new GridLayout(3,0));
 			login2.add(Step2, BorderLayout.CENTER);
 			
@@ -243,8 +254,7 @@ class Window extends JFrame implements ActionListener
 	    nextPage.addActionListener(this);
 		login2.setVisible(true);	
 				
-	}
-	
+	}	
 	
 	public void login_3(int[] exclude)
 	{
@@ -253,10 +263,10 @@ class Window extends JFrame implements ActionListener
 		
 		JPanel Step3 = new JPanel(null);
 		
-		
 		JLabel heading3 = new JLabel("LOGIN : Step 3");	
 		heading3.setFont (heading3.getFont ().deriveFont (34.0f));
 		
+		login3 = new JFrame("PASSFACE SYSTEM : LOGIN - Step3");
 		login3.setLocation(0,0);
 		login3.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		login3.setLayout(new BorderLayout());
@@ -292,6 +302,8 @@ class Window extends JFrame implements ActionListener
 		{
 			
 		}
+		
+		random_values=null;		
 		JButton nextPage = new JButton("ENTER");
 		nextPage.setFont (nextPage.getFont ().deriveFont (18.0f));
 		login3.add(nextPage, BorderLayout.PAGE_END);
@@ -426,14 +438,6 @@ class Window extends JFrame implements ActionListener
 		
 		
 	}
-	
-	void newAttempt(int selected_imgs[])
-	{
-		correctEntry=0;
-			
-		login(selected_imgs);		
-		
-	}
 
 	//ACTIONS PERFORMED BY BUTTONS
 	public void actionPerformed(ActionEvent e)
@@ -526,7 +530,6 @@ class Window extends JFrame implements ActionListener
 				for(int i=0; i<9; i++)
 				{
 					button[i].setSelected(false);
-					button[i]=null;
 				}
 			
 				login.dispose();
@@ -654,8 +657,6 @@ class Window extends JFrame implements ActionListener
 			}
 			
 		}
-			
-		
 	}
 	public static void main(String args[])
 	{
