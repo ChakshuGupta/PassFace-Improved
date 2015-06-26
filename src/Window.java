@@ -25,14 +25,17 @@ class Window extends JFrame implements ActionListener
 	ImageIcon[] image = new ImageIcon[20];
 	ImageIcon[] selectedImage = new ImageIcon[20];
 	JRadioButton[] button = new JRadioButton[9];
-	JComboBox<String>[] dir = new JComboBox[3];
-	JComboBox<String>[] displacement = new JComboBox[3];
+	JComboBox[] dir = new JComboBox[3];
+	JComboBox[] displacement = new JComboBox[3];
 	ArrayList<Integer> ReceivedValues = new ArrayList<Integer>();
 	
 	Object[] selectedDirection = new Object[3];
 	Object[] selectedDisplacement = new Object[3];
 	int[] selected_imgs = new int[3];
+	
+	//STATIC VARIABLE FOR CHECKING THE PASSFACE
 	static int correctEntry=0;
+	static int numberOfAttempts = 0;
 	
 	//CONSTRUCTOR 
 	Window(int id)
@@ -110,8 +113,8 @@ class Window extends JFrame implements ActionListener
 				registerDetail[i].setLayout(new GridLayout(6,0));
 				JLabel label1 = new JLabel("Enter Direction : ");
 				JLabel label2 = new JLabel("Enter Displacement : ");
-				dir[i] = new JComboBox<String>(direction);
-				displacement[i] = new JComboBox<String>(disp);
+				dir[i] = new JComboBox(direction);
+				displacement[i] = new JComboBox(disp);
 				
 				dir[i].addActionListener(this);
 				displacement[i].addActionListener(this);
@@ -151,7 +154,8 @@ class Window extends JFrame implements ActionListener
 			UniqueRandomNumbers uniqueValues = new UniqueRandomNumbers();
 			int[] randomValues = new int[9];
 			randomValues= uniqueValues.Unique_Values(selected_images, 1);
-								
+			
+			ButtonGroup group = new ButtonGroup();
 			try
 			{
 				for(int i=0; i<9; i++)
@@ -163,6 +167,8 @@ class Window extends JFrame implements ActionListener
 					
 					button[i] = new JRadioButton(new ImageIcon(new_image));
 					button[i].setSelectedIcon(new ImageIcon(selected_image));
+					button[i].setSelected(false);
+					group.add(button[i]);
 						
 					loginPage.add(button[i]);
 					button[i].setActionCommand(""+randomValues[i]);
@@ -201,7 +207,7 @@ class Window extends JFrame implements ActionListener
 		login2.setLayout(new BorderLayout());
 		login2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		login2.add(heading2, BorderLayout.PAGE_START);
-		
+		ButtonGroup group = new ButtonGroup();
 		random_values = unique_image.Unique_Values(exclude, 0);
 		try
 		{
@@ -214,6 +220,8 @@ class Window extends JFrame implements ActionListener
 				
 				button[i] = new JRadioButton(new ImageIcon(new_image));
 				button[i].setSelectedIcon(new ImageIcon(selected_image));
+				button[i].setSelected(false);
+				group.add(button[i]);
 								
 				Step2.add(button[i]);
 				button[i].setActionCommand(""+random_values[i]);
@@ -255,6 +263,7 @@ class Window extends JFrame implements ActionListener
 		login3.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		login3.add(heading3, BorderLayout.PAGE_START);
 		
+		ButtonGroup group = new ButtonGroup();
 		random_values = unique_image.Unique_Values(exclude, 2);
 		try
 		{
@@ -267,6 +276,8 @@ class Window extends JFrame implements ActionListener
 				
 				button[i] = new JRadioButton(new ImageIcon(new_image));
 				button[i].setSelectedIcon(new ImageIcon(selected_image));
+				button[i].setSelected(false);
+				group.add(button[i]);
 								
 				Step3.add(button[i]);
 				button[i].setActionCommand(""+random_values[i]);
@@ -353,9 +364,9 @@ class Window extends JFrame implements ActionListener
 			{
 				finalRow = (initRow+disp)%3;
 			}
-			System.out.println(" Final - "+ finalColumn + " " + finalRow);
+			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;
-			System.out.println(val);
+			//System.out.println(val);
 			return val;
 						
 		}
@@ -382,9 +393,9 @@ class Window extends JFrame implements ActionListener
 					}
 				}
 			}
-			System.out.println(" Final - "+ finalColumn + " " + finalRow);
+			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;// CALCULATING THE INDEX OF THE PASSFACE FROM ROW AND COLUMN VALUES OBTAINED
-			System.out.println(val);
+			//System.out.println(val);
 			return val;
 		}
 		else if(direction.equals("LEFT"))
@@ -403,9 +414,9 @@ class Window extends JFrame implements ActionListener
 			{
 				finalColumn = (initColumn+disp)%3;
 			}
-			System.out.println(" Final - "+ finalColumn + " " + finalRow);
+			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;
-			System.out.println(val);
+			//System.out.println(val);
 			return val;
 			
 		}
@@ -415,6 +426,14 @@ class Window extends JFrame implements ActionListener
 		
 		
 	}
+	
+	void newAttempt(int selected_imgs[])
+	{
+		correctEntry=0;
+			
+		login(selected_imgs);		
+		
+	}
 
 	//ACTIONS PERFORMED BY BUTTONS
 	public void actionPerformed(ActionEvent e)
@@ -422,7 +441,6 @@ class Window extends JFrame implements ActionListener
 		String cmd = e.getActionCommand();
 		if(cmd=="submit")
 		{
-			//System.out.print("done");
 			//setting initial count to 0
 			int count=0;
 				
@@ -486,64 +504,154 @@ class Window extends JFrame implements ActionListener
 		else if(cmd=="Next")
 		{
 			int val;
+			int count=0;
 			for(int i=0; i<9; i++)
 			{
 				if(button[i].isSelected()==true)
 				{
-					val= findActualValue(i, selectedDirection[1], selectedDisplacement[1]);// CALLING THE FUNCTION WITH CURRENT INDEX VALUE AND THE DIRECTION AND DISPLACEMENT VALUES
-					ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					count++;
+				}
+				
+			}
+			if(count==1)
+			{
+				for(int i=0; i<9; i++)
+				{
+					if(button[i].isSelected()==true)
+					{
+						val= findActualValue(i, selectedDirection[1], selectedDisplacement[1]);// CALLING THE FUNCTION WITH CURRENT INDEX VALUE AND THE DIRECTION AND DISPLACEMENT VALUES
+						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					}
+				}
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+					button[i]=null;
+				}
+			
+				login.dispose();
+				login_2(selected_imgs);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "Need to select an image", "alert", JOptionPane.INFORMATION_MESSAGE);
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+					button[i]=null;
 				}
 			}
-			
-			login.setVisible(false);
-			login_2(selected_imgs);
+		
 			
 		}
 		else if(cmd=="Next2")
 		{
 			int val;
+			int count=0;
 			for(int i=0; i<9; i++)
 			{
 				if(button[i].isSelected()==true)
 				{
-					val= findActualValue(i, selectedDirection[0], selectedDisplacement[0]); 
-					ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					count++;
+				}
+				
+			}
+			if(count==1)
+			{
+			
+				for(int i=0; i<9; i++)
+				{
+					if(button[i].isSelected()==true)
+					{
+						val= findActualValue(i, selectedDirection[0], selectedDisplacement[0]); 
+						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					}
+				}
+				
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+				}
+				
+				login2.dispose();
+				login_3(selected_imgs);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "Need to select an image", "alert", JOptionPane.INFORMATION_MESSAGE);
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+					button[i]=null;
 				}
 			}
-			
-			login2.setVisible(false);
-			login_3(selected_imgs);
 		}
 		else if(cmd=="Next3")
 		{
 			int val;
+			int count=0;
 			for(int i=0; i<9; i++)
 			{
 				if(button[i].isSelected()==true)
 				{
-					val= findActualValue(i, selectedDirection[2], selectedDisplacement[2]);
-					ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					count++;
 				}
-			}
-			for(int i=0; i<3; i++)
-			{
-				if(ReceivedValues.contains(selected_imgs[i]))
-				{
-					correctEntry++;
-				}
-			}
-						
-			if(correctEntry==3)
-			{
-				JOptionPane.showMessageDialog(null, "WELCOME! YOU HAVE LOGGED IN ", "alert", JOptionPane.INFORMATION_MESSAGE);
 				
+			}
+			if(count==1)
+			{
+				for(int i=0; i<9; i++)
+				{
+					if(button[i].isSelected()==true)
+					{
+						val= findActualValue(i, selectedDirection[2], selectedDisplacement[2]);
+						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+					}
+				}
+				for(int i=0; i<3; i++)
+				{
+					if(ReceivedValues.contains(selected_imgs[i]))
+					{
+						correctEntry++;
+					}
+				}
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+				}
+							
+				if(correctEntry==3)
+				{
+					JOptionPane.showMessageDialog(null, "WELCOME! YOU HAVE LOGGED IN ", "alert", JOptionPane.INFORMATION_MESSAGE);
+					
+				}
+				else
+				{
+					numberOfAttempts++;
+					if(numberOfAttempts<3)
+					{
+						
+						JOptionPane.showMessageDialog(null, "SORRY! INCORRECT PASSFACES! NUMBER OF ATTEMPTS LEFT: "+(3-numberOfAttempts), "alert", JOptionPane.INFORMATION_MESSAGE);
+						newAttempt(selected_imgs);
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "NO ATTEMPTS LEFT!", "alert", JOptionPane.INFORMATION_MESSAGE);
+						
+					}
+				}
+				
+				login3.dispose();
 			}
 			else
 			{
-				JOptionPane.showMessageDialog(null, "SORRY! INCORRECT PASSFACES! ", "alert", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Need to select an image", "alert", JOptionPane.INFORMATION_MESSAGE);
+				for(int i=0; i<9; i++)
+				{
+					button[i].setSelected(false);
+					button[i]=null;
+				}
 			}
-			
-			login3.setVisible(false);
 			
 		}
 			
