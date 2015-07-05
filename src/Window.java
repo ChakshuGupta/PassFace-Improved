@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 
-
 class Window extends JFrame implements ActionListener
 {
 	//DECLARING REQUIRED VARIABLES
@@ -641,9 +640,14 @@ class Window extends JFrame implements ActionListener
 					{
 						JOptionPane.showMessageDialog(null, "NO ATTEMPTS LEFT!", "alert", JOptionPane.INFORMATION_MESSAGE);
 						
+						//FINDING IP ADDRESS AND MAC ADDRESS OF THE USER
+						
+						FindMACAddress mac = new FindMACAddress();						
+						mac.IPandMACAddress();					
+						
 					}
 				}
-				
+				login3.setVisible(false);
 				login3.dispose();
 			}
 			else
@@ -654,6 +658,8 @@ class Window extends JFrame implements ActionListener
 					button[i].setSelected(false);
 					button[i]=null;
 				}
+				
+				
 			}
 			
 		}
