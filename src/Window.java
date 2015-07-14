@@ -8,17 +8,27 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 class Window extends JFrame implements ActionListener
 {
 	//DECLARING REQUIRED VARIABLES
 	JFrame window = new JFrame("PASSFACE SYSTEM");
+	JFrame name_register;
+	JFrame login_name;
 	JFrame login;
 	JFrame login2;
 	JFrame login3;
 	JFrame register = new JFrame("PASSFACE SYSTEM : Registeration");
+	JFrame register2 = new JFrame("PASSFACE SYSTEM : Registeration");
 	JPanel ImgPanel = new JPanel();
+	
+	JTextField uid;
+	JTextField fname;
+	JTextField lname;
+	JTextField user_id;
 	
 	JCheckBox[] cbox = new JCheckBox[20];
 	ImageIcon[] image = new ImageIcon[20];
@@ -28,65 +38,137 @@ class Window extends JFrame implements ActionListener
 	JComboBox[] displacement = new JComboBox[3];
 	ArrayList<Integer> ReceivedValues = new ArrayList<Integer>();
 	
+	//Variables for registration
 	Object[] selectedDirection = new Object[3];
 	Object[] selectedDisplacement = new Object[3];
 	int[] selected_imgs = new int[3];
+	String UserID;
+	String FName;
+	String LName;
+	
+	 DatabaseConnection dbConn = new DatabaseConnection();
 	
 	//STATIC VARIABLE FOR CHECKING THE PASSFACE
 	static int correctEntry=0;
 	static int numberOfAttempts = 0;
 	
-	//CONSTRUCTOR 
-	Window(int id)
+	//CONSTRUCTOR
+	Window()
 	{
 		window.setLocation(0,0);//SETTING WINDOW LOCATION
-		window.setLayout(new BorderLayout()); // SETTING WINDOW LAYOUT
-		window.setExtendedState(JFrame.MAXIMIZED_BOTH); //FOR MAXIMIZED WINDOW
+		window.setLayout(new GridLayout(3,0)); // SETTING WINDOW LAYOUT
+		window.setSize(400, 400);
 		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
-		if(id==1)
-		{
-				JLabel heading = new JLabel("REGISTRATION");
-				heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
-				window.add(heading, BorderLayout.PAGE_START);
-				for(int i=1; i<=20; i++)//Setting the images for registration
-				{
-					image[i-1]= new ImageIcon("Pics/"+i+".jpg");
-					selectedImage[i-1]= new ImageIcon("Pics/"+i+"_s.jpg");//Images to differentiate the selected ones
-					Image img = image[i-1].getImage();
-					Image img_s = selectedImage[i-1].getImage();
-					Image new_image= img.getScaledInstance(150, 150,  java.awt.Image.SCALE_SMOOTH);//Scaling the image to required size
-					Image selected_image=img_s.getScaledInstance(150, 150,  java.awt.Image.SCALE_SMOOTH);
-					ImageIcon newIcon = new ImageIcon(new_image);
-					ImageIcon selectImage = new ImageIcon(selected_image);
-					
-					cbox[i-1]=new JCheckBox(""+i, newIcon);
-					cbox[i-1].setSelected(false);
-					cbox[i-1].setSelectedIcon(selectImage);// Setting the image for selected checkbox
-					ImgPanel.add(cbox[i-1]);
-				}
-				ImgPanel.setLayout(new GridLayout(4,5));
-				window.add(ImgPanel, BorderLayout.CENTER);
-				JButton submit = new JButton("SUBMIT");
-				submit.setFont (submit.getFont ().deriveFont (16.0f));
-				submit.setActionCommand("submit");
-				submit.addActionListener(this);
-				window.add(submit, BorderLayout.PAGE_END);
-				
-		}
+		JLabel heading = new JLabel("PASSFACE SYSTEM");
+		heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
+		window.add(heading);
 		
+		dbConn.createBannedUserTable();//Creating tables for banned users;
+		dbConn.createUserTable();//Creating tables for users;
+		
+		JButton register = new JButton("REGISTER");
+		register.setFont (register.getFont ().deriveFont (16.0f));
+		register.setActionCommand("register");
+		register.addActionListener(this);
+		window.add(register);
+		
+		
+		JButton login = new JButton("LOGIN");
+		login.setFont (login.getFont ().deriveFont (16.0f));
+		login.setActionCommand("login");
+		login.addActionListener(this);
+		window.add(login);
 		window.setVisible(true);
+			
 		
+	}	
+	void name_register()
+	{
+		name_register= new JFrame("PASSFACE SYSTEM : Registeration");
+		name_register.setLocation(0,0);//SETTING WINDOW LOCATION
+		name_register.setLayout(new GridLayout(0,1)); // SETTING WINDOW LAYOUT
+		name_register.setSize(400, 500);
+		name_register.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
+		JLabel heading = new JLabel("REGISTRATION");
+		heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
+		name_register.add(heading);
+		
+		uid = new JTextField();// Text Field to enter the User ID for Registration
+		fname = new JTextField(); // Text Field to enter the User First Name for Registration
+		lname = new JTextField(); // Text Field to enter the User Last Name for Registration
+		
+		uid.addActionListener(this);
+		fname.addActionListener(this);
+		lname.addActionListener(this);
+		
+		
+		JLabel userID = new JLabel("USER-ID - ");
+		JLabel Fname = new JLabel("FIRST NAME - ");
+		JLabel Lname = new JLabel("LAST NAME - ");
+		
+		
+		name_register.add(userID);
+		name_register.add(uid);
+		name_register.add(Fname);
+		name_register.add(fname);
+		name_register.add(Lname);
+		name_register.add(lname);
+		
+		JButton next = new JButton("NEXT->");
+		next.setFont (next.getFont ().deriveFont (16.0f));
+		next.setActionCommand("submit");
+		next.addActionListener(this);
+		name_register.add(next);
+		name_register.setVisible(true);
 	}
-	void register(int selected_images[])
+	void register()
 	{
 		register.setLocation(0,0);//SETTING WINDOW LOCATION
 		register.setLayout(new BorderLayout()); // SETTING WINDOW LAYOUT
 		register.setExtendedState(JFrame.MAXIMIZED_BOTH); //FOR MAXIMIZED WINDOW
 		register.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
+		JLabel heading = new JLabel("REGISTRATION");
+		heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
+		register.add(heading, BorderLayout.PAGE_START);
+		for(int i=1; i<=20; i++)//Setting the images for registration
+		{
+			image[i-1]= new ImageIcon("Pics/"+i+".jpg");
+			selectedImage[i-1]= new ImageIcon("Pics/"+i+"_s.jpg");//Images to differentiate the selected ones
+			Image img = image[i-1].getImage();
+			Image img_s = selectedImage[i-1].getImage();
+			Image new_image= img.getScaledInstance(150, 150,  java.awt.Image.SCALE_SMOOTH);//Scaling the image to required size
+			Image selected_image=img_s.getScaledInstance(150, 150,  java.awt.Image.SCALE_SMOOTH);
+			ImageIcon newIcon = new ImageIcon(new_image);
+			ImageIcon selectImage = new ImageIcon(selected_image);
+			
+			cbox[i-1]=new JCheckBox(""+i, newIcon);
+			cbox[i-1].setSelected(false);
+			cbox[i-1].setSelectedIcon(selectImage);// Setting the image for selected checkbox
+			ImgPanel.add(cbox[i-1]);
+		}
+		ImgPanel.setLayout(new GridLayout(4,5));
+		register.add(ImgPanel, BorderLayout.CENTER);
+		JButton submit = new JButton("SUBMIT");
+		submit.setFont (submit.getFont ().deriveFont (16.0f));
+		submit.setActionCommand("submit1");
+		submit.addActionListener(this);
+		register.add(submit, BorderLayout.PAGE_END);
+				
+		
+		
+		register.setVisible(true);
+		
+	}
+	void register(int selected_images[])
+	{
+		register2.setLocation(0,0);//SETTING WINDOW LOCATION
+		register2.setLayout(new BorderLayout()); // SETTING WINDOW LAYOUT
+		register2.setExtendedState(JFrame.MAXIMIZED_BOTH); //FOR MAXIMIZED WINDOW
+		register2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
 		
 			JLabel heading = new JLabel("REGISTRATION: Step2");
 			heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
-			window.add(heading, BorderLayout.PAGE_START);
+			register2.add(heading, BorderLayout.PAGE_START);
 			
 			JPanel registerPage = new JPanel();
 			JPanel[] registerDetail = new JPanel[3];
@@ -126,15 +208,15 @@ class Window extends JFrame implements ActionListener
 				
 			}
 			
-			register.add(Imgs, BorderLayout.LINE_START);
-			register.add(registerPage, BorderLayout.CENTER);
+			register2.add(Imgs, BorderLayout.LINE_START);
+			register2.add(registerPage, BorderLayout.CENTER);
 			
 			JButton submit = new JButton("SUBMIT");
 			submit.setFont (submit.getFont ().deriveFont (16.0f));
 			submit.setActionCommand("submit2");
 			submit.addActionListener(this);
-			register.add(submit, BorderLayout.PAGE_END);		
-			register.setVisible(true);
+			register2.add(submit, BorderLayout.PAGE_END);		
+			register2.setVisible(true);
 		
 	}
 	void newAttempt(int selected_imgs[])
@@ -143,6 +225,34 @@ class Window extends JFrame implements ActionListener
 		
 		login(selected_imgs);		
 		
+	}
+	void login()
+	{
+		
+		login_name= new JFrame("PASSFACE SYSTEM : LOGIN");
+		login_name.setLocation(0,0);//SETTING WINDOW LOCATION
+		login_name.setLayout(new GridLayout(0,1)); // SETTING WINDOW LAYOUT
+		login_name.setSize(350, 350);
+		login_name.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
+		JLabel heading = new JLabel("LOGIN");
+		heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
+		login_name.add(heading);
+		
+		user_id = new JTextField();	// Text Field to input User ID
+		JLabel userID = new JLabel("ENTER USER ID - ");
+		
+		user_id.addActionListener(this);
+		
+		login_name.add(userID);
+		login_name.add(user_id);
+		
+		JButton submit = new JButton("NEXT");
+		submit.setActionCommand("submit_name");
+		submit.addActionListener(this);
+		
+		login_name.add(submit);
+		
+		login_name.setVisible(true);
 	}
 	public void login(int selected_images[])
 	{
@@ -158,9 +268,9 @@ class Window extends JFrame implements ActionListener
 			heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
 			login.add(heading, BorderLayout.PAGE_START);
 			
-			UniqueRandomNumbers uniqueValues = new UniqueRandomNumbers();
+			UniqueRandomNumbers uniqueValues = new UniqueRandomNumbers(); // Creating an object for Unique Random Numbers Class
 			int[] randomValues = new int[9];
-			randomValues= uniqueValues.Unique_Values(selected_images, 1);
+			randomValues= uniqueValues.Unique_Values(selected_images, 1); // Calling the Unique Values Function to find 9 unique values for login
 			
 			ButtonGroup group = new ButtonGroup();
 			try
@@ -190,12 +300,12 @@ class Window extends JFrame implements ActionListener
 			}
 			catch(Exception e)
 			{
-				
+				e.printStackTrace();
 			}
 			JButton nextPage = new JButton("NEXT");
 			nextPage.setFont (nextPage.getFont ().deriveFont (18.0f));
 			login.add(nextPage, BorderLayout.PAGE_END);
-			nextPage.setActionCommand("Next");
+			nextPage.setActionCommand("Next");// SETTING THE ACTION COMMAND FOR NEXT BUTTON
 		    nextPage.addActionListener(this);
 		    login.setVisible(true);
 	}
@@ -312,11 +422,11 @@ class Window extends JFrame implements ActionListener
 		
 		
 	}
-	int findActualValue(int selectedPosition, Object direction, Object displacement)// Finding the value of the passface from the selected value
+	int findActualValue(int selectedPosition, String direction, Object displacement)// Finding the value of the passface from the selected value
 	{
 		int val;
 		int initColumn, initRow, finalRow, finalColumn;
-		int disp = Integer.valueOf((String)displacement);//CONVERTING OBJECT TO INTEGER
+		int disp = (int) displacement;
 		
 		initColumn = selectedPosition%3;//FINDING THE ROW AND COLUMN VALUES OF THE SELECTED IMAGE
 		if(selectedPosition <3 && selectedPosition>=0)
@@ -332,6 +442,7 @@ class Window extends JFrame implements ActionListener
 			initRow = 2;
 		}
 		
+		//System.out.println(direction);
 		//CHECKING EACH SELECTED IMAGE FOR THE CORRESPONDING PASSFACE
 		
 		if(direction.equals("DOWN"))
@@ -442,7 +553,54 @@ class Window extends JFrame implements ActionListener
 	public void actionPerformed(ActionEvent e)
 	{
 		String cmd = e.getActionCommand();
-		if(cmd=="submit")
+		if(cmd == "register") // THE COMMAND DESCRIPTION FOR REGISTER BUTTON
+		{			
+			window.setVisible(false);
+			window.dispose();
+			name_register();
+			
+		}
+		else if(cmd == "login")// THE COMMAND DESCRIPTION FOR LOGIN BUTTON
+		{
+			int id;
+			FindMACAddress address = new FindMACAddress();
+			id = address.IPandMACAddress(0);
+			
+			if(id==1)
+			{
+				JOptionPane.showMessageDialog(null, "Your IP/ MAC Address is banned! Cannot Login", "alert", JOptionPane.INFORMATION_MESSAGE);
+				window.setVisible(false);
+				window.dispose();
+				return;
+			}
+			else
+			{			
+				window.setVisible(false);
+				window.dispose();
+				login();
+			}
+		}
+		else if(cmd=="submit")// THE COMMAND DESCRIPTION FOR SUBMIT BUTTON FOR REGISTRATION
+		{
+			UserID = uid.getText();
+			FName = fname.getText();
+			LName = lname.getText();
+			
+			System.out.println(FName);
+			
+			if(UserID.equals("") || FName.equals("") || LName.equals(""))
+			{
+				JOptionPane.showMessageDialog(null, "Enter non-empty values.", "alert", JOptionPane.INFORMATION_MESSAGE);
+			}
+			else
+			{				
+				name_register.setVisible(false);
+				name_register.dispose();
+				register();				
+			}			
+			
+		}
+		else if(cmd=="submit1")
 		{
 			//setting initial count to 0
 			int count=0;
@@ -476,7 +634,7 @@ class Window extends JFrame implements ActionListener
 					}
 					JOptionPane.showMessageDialog(null, "Enter the details for the selected images");	
 				
-					window.setVisible(false);
+					register.setVisible(false);
 					register(selected_imgs);
 				}
 				else //else clear the selection 
@@ -486,6 +644,7 @@ class Window extends JFrame implements ActionListener
 					{
 						cbox[i].setSelected(false);
 					}
+				
 				}
 		}
 		else if(cmd=="submit2")
@@ -500,9 +659,64 @@ class Window extends JFrame implements ActionListener
 				selectedDisplacement[i] = displacement[i].getSelectedItem();
 		
 			}
+			dbConn.createUserTable();
+			dbConn.InsertDataInTable(UserID, FName, LName, selected_imgs, selectedDirection, selectedDisplacement);
 			JOptionPane.showMessageDialog(null, "REGISTRATION COMPLETE!!", "alert", JOptionPane.INFORMATION_MESSAGE);
-			register.setVisible(false);
-			login(selected_imgs);
+			register2.setVisible(false);
+			register2.dispose();
+			new Window();
+			
+		}
+		else if(cmd=="submit_name")
+		{
+			String userEntered;
+			userEntered = user_id.getText();
+			ResultSet rs;
+			
+			DatabaseConnection dbconn = new DatabaseConnection();
+			rs= dbconn.SearchInUserTable(userEntered);
+				
+			try 
+			{
+				int count=0;
+				while(rs.next())
+				{
+					count++;
+				}
+				if(count>0)
+				{
+					rs.beforeFirst();
+					while(rs.next())
+					{
+						selected_imgs[0]= rs.getInt("PassFace1");
+						selected_imgs[1]= rs.getInt("PassFace2");
+						selected_imgs[2]= rs.getInt("PassFace3");
+						
+						selectedDirection[0]= rs.getString("Direction1");
+						selectedDirection[1]= rs.getString("Direction2");
+						selectedDirection[2]= rs.getString("Direction3");
+						
+						selectedDisplacement[2]= (rs.getInt("Displacement")%10);
+						selectedDisplacement[1]= ((rs.getInt("Displacement")/10)%10);
+						selectedDisplacement[0]= ((rs.getInt("Displacement")/100)%10);
+						
+						login_name.setVisible(false);
+						login(selected_imgs);
+					}
+				}
+				else
+				{
+					JOptionPane.showMessageDialog(null, "The given UserID is not registered!!", "alert", JOptionPane.INFORMATION_MESSAGE);
+					login_name.setVisible(false);
+					new Window();
+				}
+			} 
+			catch (SQLException e1) 
+			{
+				e1.printStackTrace();
+			}
+			
+		
 		}
 		else if(cmd=="Next")
 		{
@@ -522,8 +736,9 @@ class Window extends JFrame implements ActionListener
 				{
 					if(button[i].isSelected()==true)
 					{
-						val= findActualValue(i, selectedDirection[1], selectedDisplacement[1]);// CALLING THE FUNCTION WITH CURRENT INDEX VALUE AND THE DIRECTION AND DISPLACEMENT VALUES
+						val= findActualValue(i, (String)selectedDirection[1], selectedDisplacement[1]);// CALLING THE FUNCTION WITH CURRENT INDEX VALUE AND THE DIRECTION AND DISPLACEMENT VALUES
 						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
+						//System.out.println("val = "+ val);
 					}
 				}
 				for(int i=0; i<9; i++)
@@ -565,7 +780,7 @@ class Window extends JFrame implements ActionListener
 				{
 					if(button[i].isSelected()==true)
 					{
-						val= findActualValue(i, selectedDirection[0], selectedDisplacement[0]); 
+						val= findActualValue(i, (String)selectedDirection[0], selectedDisplacement[0]); 
 						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
 					}
 				}
@@ -606,7 +821,7 @@ class Window extends JFrame implements ActionListener
 				{
 					if(button[i].isSelected()==true)
 					{
-						val= findActualValue(i, selectedDirection[2], selectedDisplacement[2]);
+						val= findActualValue(i, (String)selectedDirection[2], selectedDisplacement[2]);
 						ReceivedValues.add(Integer.parseInt(button[val].getActionCommand()));
 					}
 				}
@@ -642,9 +857,8 @@ class Window extends JFrame implements ActionListener
 						
 						//FINDING IP ADDRESS AND MAC ADDRESS OF THE USER
 						
-						FindMACAddress mac = new FindMACAddress();						
-						mac.IPandMACAddress();					
-						
+						FindMACAddress address = new FindMACAddress();			
+						address.IPandMACAddress(1);		
 					}
 				}
 				login3.setVisible(false);
@@ -657,16 +871,13 @@ class Window extends JFrame implements ActionListener
 				{
 					button[i].setSelected(false);
 					button[i]=null;
-				}
-				
-				
-			}
-			
+				}				
+			}			
 		}
 	}
 	public static void main(String args[])
 	{
-		new Window(1);
+		new Window();
 	}
 	
 }
