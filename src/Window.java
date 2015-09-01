@@ -26,8 +26,6 @@ class Window extends JFrame implements ActionListener
 	JPanel ImgPanel = new JPanel();
 	
 	JTextField uid;
-	JTextField fname;
-	JTextField lname;
 	JTextField user_id;
 	
 	JCheckBox[] cbox = new JCheckBox[20];
@@ -87,32 +85,23 @@ class Window extends JFrame implements ActionListener
 		name_register= new JFrame("PASSFACE SYSTEM : Registeration");
 		name_register.setLocation(0,0);//SETTING WINDOW LOCATION
 		name_register.setLayout(new GridLayout(0,1)); // SETTING WINDOW LAYOUT
-		name_register.setSize(400, 500);
+		name_register.setSize(350, 300);
 		name_register.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //END THE PROCESS ON PRESSING CLOSE BUTTON
 		JLabel heading = new JLabel("REGISTRATION");
 		heading.setFont (heading.getFont ().deriveFont (34.0f));//SETTING FONT SIZE OF THE LABEL
 		name_register.add(heading);
 		
 		uid = new JTextField();// Text Field to enter the User ID for Registration
-		fname = new JTextField(); // Text Field to enter the User First Name for Registration
-		lname = new JTextField(); // Text Field to enter the User Last Name for Registration
 		
 		uid.addActionListener(this);
-		fname.addActionListener(this);
-		lname.addActionListener(this);
-		
 		
 		JLabel userID = new JLabel("USER-ID - ");
-		JLabel Fname = new JLabel("FIRST NAME - ");
-		JLabel Lname = new JLabel("LAST NAME - ");
+//		JLabel Fname = new JLabel("FIRST NAME - ");
+//		JLabel Lname = new JLabel("LAST NAME - ");
 		
 		
 		name_register.add(userID);
 		name_register.add(uid);
-		name_register.add(Fname);
-		name_register.add(fname);
-		name_register.add(Lname);
-		name_register.add(lname);
 		
 		JButton next = new JButton("NEXT->");
 		next.setFont (next.getFont ().deriveFont (16.0f));
@@ -178,7 +167,7 @@ class Window extends JFrame implements ActionListener
 			Imgs.setLayout(new GridLayout(3,0));
 			registerPage.setLayout(new GridLayout(3,0));
 			
-			String[] direction = {"UP","DOWN","LEFT","RIGHT" };//Options for drop down Menu
+			String[] direction = {"UP","DOWN","LEFT","RIGHT","NO CHANGE"};//Options for drop down Menu
 			String[] disp = {"0" ,"1", "2"};
 			
 			for(int i=0; i<3; i++) // Taking the details for each selected image
@@ -451,22 +440,11 @@ class Window extends JFrame implements ActionListener
 			
 			if(initRow>=disp)
 			{
-				finalRow = initRow-disp;				
+				finalRow = (initRow-disp)%3;			
 			}
 			else 
 			{
-				finalRow=initRow;
-				for(int i=0; i<disp; i++)
-				{
-					if(finalRow==0)
-					{
-						finalRow = 2;
-					}
-					else
-					{
-						finalRow--;
-					}
-				}
+				finalRow = 3 + (initRow-disp)%3;
 				
 			}		
 			
@@ -478,14 +456,9 @@ class Window extends JFrame implements ActionListener
 		else if(direction.equals("UP"))
 		{
 			finalColumn = initColumn;
-			if((initRow+disp)<=2)
-			{
-				finalRow=initRow+disp;
-			}
-			else
-			{
-				finalRow = (initRow+disp)%3;
-			}
+			
+			finalRow = (initRow+disp)%3;
+			
 			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;
 			//System.out.println(val);
@@ -495,25 +468,15 @@ class Window extends JFrame implements ActionListener
 		else if(direction.equals("RIGHT"))
 		{
 			finalRow = initRow;
+			finalColumn = (initColumn-disp)%3;
 			if(initColumn >= disp)
 			{
-				finalColumn = initColumn-disp;
+				finalColumn = (initColumn-disp)%3;
 				
 			}
 			else
 			{
-				finalColumn=initColumn;
-				for(int i=0; i<disp; i++)
-				{
-					if(finalColumn==0)
-					{
-						finalColumn = 2;
-					}
-					else
-					{
-						finalColumn--;
-					}
-				}
+				finalColumn = 3+(initColumn-disp) % 3;
 			}
 			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;// CALCULATING THE INDEX OF THE PASSFACE FROM ROW AND COLUMN VALUES OBTAINED
@@ -524,18 +487,8 @@ class Window extends JFrame implements ActionListener
 		{
 			finalRow = initRow;
 			
-			if(disp==0)
-			{
-				finalColumn=initColumn;				
-			}
-			else if((initColumn+disp)<=2)
-			{
-				finalColumn=initColumn+disp;
-			}
-			else
-			{
-				finalColumn = (initColumn+disp)%3;
-			}
+			finalColumn = (initColumn+disp)%3;
+			
 			//System.out.println(" Final - "+ finalColumn + " " + finalRow);
 			val = finalRow*3 + finalColumn;
 			//System.out.println(val);
@@ -583,20 +536,40 @@ class Window extends JFrame implements ActionListener
 		else if(cmd=="submit")// THE COMMAND DESCRIPTION FOR SUBMIT BUTTON FOR REGISTRATION
 		{
 			UserID = uid.getText();
-			FName = fname.getText();
-			LName = lname.getText();
+			ResultSet rs;
+			//System.out.println(FName);
 			
-			System.out.println(FName);
-			
-			if(UserID.equals("") || FName.equals("") || LName.equals(""))
+			if(UserID.equals(""))
 			{
 				JOptionPane.showMessageDialog(null, "Enter non-empty values.", "alert", JOptionPane.INFORMATION_MESSAGE);
 			}
 			else
-			{				
-				name_register.setVisible(false);
-				name_register.dispose();
-				register();				
+			{
+								
+				DatabaseConnection dbconn = new DatabaseConnection();
+				rs= dbconn.SearchInUserTable(UserID);
+				int count=0;
+				try
+				{
+					while(rs.next())
+					{
+						count++;
+					}
+					if(count==0)
+					{
+						name_register.setVisible(false);
+						name_register.dispose();
+						register();	
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "User ID already exists!", "alert", JOptionPane.INFORMATION_MESSAGE);
+					}
+				}
+				catch (SQLException e1) 
+				{
+					e1.printStackTrace();
+				}			
 			}			
 			
 		}
@@ -656,11 +629,15 @@ class Window extends JFrame implements ActionListener
 				selectedDisplacement[i] = new Object();
 				
 				selectedDirection[i] = dir[i].getSelectedItem();
-				selectedDisplacement[i] = displacement[i].getSelectedItem();
+				String check = new String((String)selectedDirection[i]);
+				if(check.equals("NO CHANGE"))
+					selectedDisplacement[i] = "0";
+				else
+					selectedDisplacement[i] = displacement[i].getSelectedItem();
 		
 			}
 			dbConn.createUserTable();
-			dbConn.InsertDataInTable(UserID, FName, LName, selected_imgs, selectedDirection, selectedDisplacement);
+			dbConn.InsertDataInTable(UserID, selected_imgs, selectedDirection, selectedDisplacement);
 			JOptionPane.showMessageDialog(null, "REGISTRATION COMPLETE!!", "alert", JOptionPane.INFORMATION_MESSAGE);
 			register2.setVisible(false);
 			register2.dispose();
