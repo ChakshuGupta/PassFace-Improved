@@ -495,6 +495,14 @@ class Window extends JFrame implements ActionListener
 			return val;
 			
 		}
+		else if(direction.equals("NO CHANGE"))
+		{
+			finalRow = initRow;
+			finalColumn = initColumn;
+			val = finalRow*3 + finalColumn;
+			
+			return val;
+		}
 		else
 			return 0;
 		
