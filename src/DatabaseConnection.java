@@ -1,8 +1,7 @@
  
-import java.sql.DriverManager;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.*;
+import java.util.ArrayList;
+import org.json.simple.JSONObject;
  
 public class DatabaseConnection
 {
@@ -84,8 +83,8 @@ public class DatabaseConnection
 			if(connection!=null)
 			{
 				statement = connection.createStatement();	
-				String sqlUserTable = "CREATE TABLE IF NOT EXISTS USERS (UserId VARCHAR(255), FirstName CHARACTER(255), LastName CHARACTER(255))";
-				String sqlPassFaceTable = "CREATE TABLE IF NOT EXISTS PassFace (UserId VARCHAR(255), PassFace1 INTEGER, PassFace2 INTEGER, PassFace3 INTEGER, Direction1 CHARACTER(255), Direction2 CHARACTER(255), Direction3 CHARACTER(255), Displacement INTEGER)";
+				String sqlUserTable = "CREATE TABLE IF NOT EXISTS USERS (UserId VARCHAR(255))";
+				String sqlPassFaceTable = "CREATE TABLE IF NOT EXISTS login_details (userid VARCHAR(255) NOT NULL, passface VARCHAR(255) DEFAULT NULL, PRIMARY KEY (userid))";
 				statement.executeUpdate(sqlUserTable);
 				statement.executeUpdate(sqlPassFaceTable);
 				
@@ -101,21 +100,27 @@ public class DatabaseConnection
 		}
     	
     }
-    void InsertDataInTable(String UserID, String FName, String LName, int passface[], Object dir[], Object disp[]) // INSERT DATA IN REGISTERED USER TABLE
+    @SuppressWarnings("unchecked")
+	void InsertDataInTable(String userid, ArrayList<Integer> passface, ArrayList<Object> dir, ArrayList<Object> disp) // INSERT DATA IN REGISTERED USER TABLE
     {
     	PreparedStatement preparedStatement = null;
-    	PreparedStatement preparedStatement1 = null;
-    	String InsertSql = "INSERT INTO USERS(UserId, FirstName, LastName) VALUES (\" " + UserID + " \", \" " + FName + " \", \" " + LName + " \" )";
-    	String Insert = "INSERT INTO PassFace(UserId, PassFace1, PassFace2, PassFace3, Direction1,  Direction2, Direction3, Displacement) VALUES (\" " + UserID + " \",  " + passface[0] + "," + passface[1]+","+passface[2]+"  ,\"" + (String)dir[0]+"\" , \"" + (String)dir[1]+"\" , \"" + (String)dir[2] + "\" , " + disp[0]+"" + disp[1] +""+ disp[2] + " )";
+    	ArrayList<JSONObject> passface_details = new ArrayList<JSONObject>();
+    	for (int i=0; i<passface.size(); i++)
+    	{
+    		JSONObject pass = new JSONObject();
+    		pass.put("image", passface.get(i));
+    		pass.put("direction", dir.get(i));
+    		pass.put("displacement", disp.get(i));
+    		passface_details.add(pass);
+    	}
+    	
+    	String insert_query = "INSERT INTO login_details(userid, passface) VALUES (\" "+userid+" \", \'"+passface_details.toString()+"\')";
     	try 
     	{
-			preparedStatement = connection.prepareStatement(InsertSql);
+    			
+			preparedStatement = connection.prepareStatement(insert_query);
 			preparedStatement.executeUpdate();
-			
-			preparedStatement1 = connection.prepareStatement(Insert);
-			preparedStatement1.executeUpdate();
-			
-			//System.out.println("Record is inserted in table!");
+		
 		} 
     	catch (SQLException e) 
     	{			
@@ -129,7 +134,7 @@ public class DatabaseConnection
 	    	Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection("jdbc:mysql://localhost/USERS","root", "root");
 			statement = connection.createStatement();	
-			String query = "SELECT * FROM PassFace WHERE UserId= \" "+search+ "\"";
+			String query = "SELECT * FROM login_details WHERE UserId= \" "+search+ "\"";
 			ResultSet rs = statement.executeQuery(query);
 			
 			return rs;
