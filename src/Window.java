@@ -39,8 +39,8 @@ class Window extends JFrame implements ActionListener
 	ImageIcon[] image = new ImageIcon[20];
 	ImageIcon[] selectedImage = new ImageIcon[20];
 	JRadioButton[] button = new JRadioButton[9];
-	JComboBox[] dir = new JComboBox[3];
-	JComboBox[] displacement = new JComboBox[3];
+	ArrayList<JComboBox> dir = new ArrayList<JComboBox>();
+	ArrayList<JComboBox> displacement = new ArrayList<JComboBox>();
 	ArrayList<Integer> ReceivedValues = new ArrayList<Integer>();
 	
 	//Variables for registration
@@ -155,7 +155,7 @@ class Window extends JFrame implements ActionListener
 		register.setVisible(true);
 		
 	}
-	void register(ArrayList<Integer> selected_images)
+	void register_passface()
 	{
 		register2.setLocation(0,0);//SETTING WINDOW LOCATION
 		register2.setLayout(new BorderLayout()); // SETTING WINDOW LAYOUT
@@ -167,7 +167,7 @@ class Window extends JFrame implements ActionListener
 			register2.add(heading, BorderLayout.PAGE_START);
 			
 			JPanel registerPage = new JPanel();
-			JPanel[] registerDetail = new JPanel[3];
+			ArrayList<JPanel> registerDetail = new ArrayList<JPanel>();
 			JPanel Imgs =new JPanel();
 			
 			
@@ -177,30 +177,30 @@ class Window extends JFrame implements ActionListener
 			String[] direction = {"UP","DOWN","LEFT","RIGHT","NO CHANGE"};//Options for drop down Menu
 			String[] disp = {"0" ,"1", "2"};
 			
-			for(int i=0; i<3; i++) // Taking the details for each selected image
+			for(int i=0; i<selected_imgs.size(); i++) // Taking the details for each selected image
 			{
-				image[i]= new ImageIcon("Pics/"+selected_images.get(i)+".jpg");
+				image[i]= new ImageIcon("Pics/"+selected_imgs.get(i)+".jpg");
 				Image img = image[i].getImage();
 				Image new_image= img.getScaledInstance(200, 200,  java.awt.Image.SCALE_SMOOTH);
 				ImageIcon newIcon = new ImageIcon(new_image);
 				cbox[i]=new JCheckBox("", newIcon);
 				Imgs.add(cbox[i]);
 				
-				registerDetail[i]= new JPanel();
-				registerDetail[i].setLayout(new GridLayout(6,0));
+				registerDetail.add(i, new JPanel());
+				registerDetail.get(i).setLayout(new GridLayout(6,0));
 				JLabel label1 = new JLabel("Enter Direction : ");
 				JLabel label2 = new JLabel("Enter Displacement : ");
-				dir[i] = new JComboBox(direction);
-				displacement[i] = new JComboBox(disp);
+				dir.add(i, new JComboBox(direction));
+				displacement.add(i, new JComboBox(disp));
 				
-				dir[i].addActionListener(this);
-				displacement[i].addActionListener(this);
+				dir.get(i).addActionListener(this);
+				displacement.get(i).addActionListener(this);
 				
-				registerDetail[i].add(label1);
-				registerDetail[i].add(dir[i]);
-				registerDetail[i].add(label2);
-				registerDetail[i].add(displacement[i]);
-				registerPage.add(registerDetail[i]);
+				registerDetail.get(i).add(label1);
+				registerDetail.get(i).add(dir.get(i));
+				registerDetail.get(i).add(label2);
+				registerDetail.get(i).add(displacement.get(i));
+				registerPage.add(registerDetail.get(i));
 				
 			}
 			
@@ -496,7 +496,7 @@ class Window extends JFrame implements ActionListener
 				}
 				
 				//If selected Images is 3 then save the image number in the selected_imgs array
-				if(count==3)
+				if(count>=3)
 				{
 
 					int x=0;
@@ -511,11 +511,11 @@ class Window extends JFrame implements ActionListener
 					JOptionPane.showMessageDialog(null, "Enter the details for the selected images");	
 				
 					register.setVisible(false);
-					register(selected_imgs);
+					register_passface();
 				}
 				else //else clear the selection 
 				{
-					JOptionPane.showMessageDialog(null, "Need to select 3 images! ", "alert", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Need to select atleast 3 images! ", "alert", JOptionPane.INFORMATION_MESSAGE);
 					for(int i=0; i<20; i++) 
 					{
 						cbox[i].setSelected(false);
@@ -526,14 +526,14 @@ class Window extends JFrame implements ActionListener
 		else if(cmd=="submit2")
 		{
 			
-			for(int i=0; i<3; i++)
+			for(int i=0; i<selected_imgs.size(); i++)
 			{	
-				selectedDirection.add(i, dir[i].getSelectedItem());
+				selectedDirection.add(i, dir.get(i).getSelectedItem());
 				String check = new String((String)selectedDirection.get(i));
 				if(check.equals("NO CHANGE"))
 					selectedDisplacement.add(i,"0");
 				else
-					selectedDisplacement.add(i,displacement[i].getSelectedItem());
+					selectedDisplacement.add(i,displacement.get(i).getSelectedItem());
 		
 			}
 			dbConn.createUserTable();
@@ -667,14 +667,14 @@ class Window extends JFrame implements ActionListener
 					{
 						button[i].setSelected(false);
 					}
-					for(int i=0; i<3; i++)
+					for(int i=0; i<passface_image_list.size(); i++)
 					{
 						if(ReceivedValues.contains(passface_image_list.get(i)))
 						{
 							correctEntry++;
 						}
 					}
-					if(correctEntry==3)
+					if(correctEntry==passface_image_list.size())
 					{
 						JOptionPane.showMessageDialog(null, "WELCOME! YOU HAVE LOGGED IN ", "alert", JOptionPane.INFORMATION_MESSAGE);
 						login.dispose();
