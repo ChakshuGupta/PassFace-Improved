@@ -33,6 +33,7 @@ class Window extends JFrame implements ActionListener
 	
 	JTextField uid;
 	JTextField user_id;
+	Random random = new Random();
 	int val;
 	
 	JCheckBox[] cbox = new JCheckBox[20];
@@ -171,8 +172,8 @@ class Window extends JFrame implements ActionListener
 			JPanel Imgs =new JPanel();
 			
 			
-			Imgs.setLayout(new GridLayout(3,0));
-			registerPage.setLayout(new GridLayout(3,0));
+			Imgs.setLayout(new GridLayout(selected_imgs.size(),0));
+			registerPage.setLayout(new GridLayout(selected_imgs.size(),0));
 			
 			String[] direction = {"UP","DOWN","LEFT","RIGHT","NO CHANGE"};//Options for drop down Menu
 			String[] disp = {"0" ,"1", "2"};
@@ -218,9 +219,17 @@ class Window extends JFrame implements ActionListener
 	void newAttempt()
 	{
 		correctEntry=0;
-		selected_imgs.addAll(passface_image_list);
-		selectedDirection.addAll(passface_direction_list);
-		selectedDisplacement.addAll(passface_displacement_list);
+//		selected_imgs.addAll(passface_image_list);
+//		selectedDirection.addAll(passface_direction_list);
+//		selectedDisplacement.addAll(passface_displacement_list);
+		for(int i=0; i<3; i++)
+		{
+			int value = random.nextInt(passface_image_list.size());
+			selected_imgs.add(passface_image_list.get(value));
+			selectedDirection.add(passface_direction_list.get(value));
+			selectedDisplacement.add(passface_displacement_list.get(value));
+			
+		}
 		ReceivedValues = new ArrayList<Integer>();
 		login_passface();		
 		
@@ -269,7 +278,6 @@ class Window extends JFrame implements ActionListener
 			
 			UniqueRandomNumbers uniqueValues = new UniqueRandomNumbers(); // Creating an object for Unique Random Numbers Class
 			int[] randomValues = new int[9];
-			Random random = new Random();
 			val = random.nextInt(selected_imgs.size());
 			randomValues= uniqueValues.Unique_Values(passface_image_list, selected_imgs, val); // Calling the Unique Values Function to find 9 unique values for login
 			selected_imgs.remove(val);
@@ -573,15 +581,22 @@ class Window extends JFrame implements ActionListener
 							for(int i=0; i<passface.size(); i++)
 							{
 								JSONObject temp = (JSONObject) passface.get(i);
-								selected_imgs.add(((Long) temp.get("image")).intValue());
-								selectedDirection.add(temp.get("direction"));
-								selectedDisplacement.add(temp.get("displacement"));
-								
+																
 								passface_image_list.add(((Long) temp.get("image")).intValue());								
 								passface_direction_list.add(temp.get("direction"));
 								passface_displacement_list.add(temp.get("displacement"));
 								
 							}
+							
+							for(int i=0; i<3; i++)
+							{
+								int val = random.nextInt(passface_image_list.size());
+								selected_imgs.add(passface_image_list.get(val));
+								selectedDirection.add(passface_direction_list.get(val));
+								selectedDisplacement.add(passface_displacement_list.get(val));
+								
+							}
+							
 							login_name.setVisible(false);
 							login_passface();
 						} 
@@ -667,14 +682,14 @@ class Window extends JFrame implements ActionListener
 					{
 						button[i].setSelected(false);
 					}
-					for(int i=0; i<passface_image_list.size(); i++)
+					for(int i=0; i<ReceivedValues.size(); i++)
 					{
-						if(ReceivedValues.contains(passface_image_list.get(i)))
+						if(passface_image_list.contains(ReceivedValues.get(i)))
 						{
 							correctEntry++;
 						}
 					}
-					if(correctEntry==passface_image_list.size())
+					if(correctEntry==ReceivedValues.size())
 					{
 						JOptionPane.showMessageDialog(null, "WELCOME! YOU HAVE LOGGED IN ", "alert", JOptionPane.INFORMATION_MESSAGE);
 						login.dispose();
